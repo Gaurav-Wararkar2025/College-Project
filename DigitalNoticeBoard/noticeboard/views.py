@@ -75,7 +75,7 @@ from django.db.models.functions import TruncMonth
 from django.db.models import Count
 from datetime import datetime
 
-@login_required(login_url='login')
+
 def dashboard(request):
     """
     Advanced Admin dashboard with:

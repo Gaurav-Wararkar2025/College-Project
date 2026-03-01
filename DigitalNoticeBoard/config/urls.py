@@ -23,8 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('noticeboard.urls')),
-    path(
-    'login/',
+    path('login/',
     auth_views.LoginView.as_view(
         template_name='noticeboard/login.html',
         redirect_authenticated_user=True
@@ -33,6 +32,6 @@ urlpatterns = [
 ),
 
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('dashboard/', include('noticeboard.urls')),
+    path('dashboard/', auth_views.LogoutView.as_view(), name='dashboard'),
 ]
 

@@ -22,8 +22,9 @@ def staff_check(user):
     return user.is_staff
 
 
-@user_passes_test(staff_check)
 def home(request):
+    
+    
     notices = Notice.objects.select_related('category').all()
     categories = Category.objects.all()
 
@@ -59,6 +60,7 @@ from django.db.models.functions import TruncMonth
 from django.db.models import Count
 from datetime import datetime
 
+@login_required(login_url='login')
 @user_passes_test(staff_check)
 def dashboard(request):
     """
@@ -120,8 +122,9 @@ def dashboard(request):
 # ===============================
 # ADD NOTICE (Staff Only)
 # ==================
-@user_passes_test(staff_check)
+
 @login_required(login_url='login')
+@user_passes_test(staff_check)
 def add_notice(request):
     """
     Only staff users can add notices.
@@ -151,6 +154,7 @@ def add_notice(request):
 # ===============================
 # EDIT NOTICE (Staff Only)
 # ===============================
+@login_required(login_url='login')
 @user_passes_test(staff_check)
 def edit_notice(request, pk):
     """
@@ -180,6 +184,7 @@ def edit_notice(request, pk):
 # ===============================
 # DELETE NOTICE (Staff Only)
 # ===============================
+@login_required(login_url='login')
 @user_passes_test(staff_check)
 def delete_notice(request, pk):
     """
@@ -213,26 +218,37 @@ def notice_detail(request, pk):
 
 
 
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
 
-from django.contrib.auth import authenticate, login
-from django.shortcuts import redirect
-
-
-@user_passes_test(staff_check)
 def login_view(request):
 
     if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
 
-        if user:
+        if user is not None:
             login(request, user)
 
+            # ROLE BASED REDIRECT
             if user.is_staff:
                 return redirect('dashboard')
             else:
                 return redirect('home')
 
+        else:
+            return render(request, 'noticeboard/login.html', {
+                'error': 'Invalid credentials'
+            })
+
     return render(request, 'noticeboard/login.html')
+
+
+
+from django.contrib.auth import logout
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')

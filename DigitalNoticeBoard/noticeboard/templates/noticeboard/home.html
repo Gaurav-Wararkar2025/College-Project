@@ -2,12 +2,9 @@
 
 <!-- HERO SECTION -->
 <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+    
   <div class="container-fluid py-4">
-    {% if notice.image %}
-    <img src="{{ notice.image.url }}"
-         class="img-fluid rounded mb-2"
-         style="height:150px; object-fit:cover;">
-{% endif %}
+   
     <h1 class="display-5 fw-bold">Digital Notice Board System</h1>
     <p class="col-md-8 fs-5">
       Always stay updated with the latest announcements from your college or
@@ -41,7 +38,14 @@
 </div>
 
 <!-- LATEST NOTICES -->
+
 <h3 class="mb-4">Latest Notices</h3>
+
+{% if notice.image %}
+    <img src="{{ notice.image.url }}"
+         class="img-fluid rounded mb-2"
+         style="height:150px; object-fit:cover;">
+{% endif %}
 
 <div class="row">
   {% for notice in notices %}

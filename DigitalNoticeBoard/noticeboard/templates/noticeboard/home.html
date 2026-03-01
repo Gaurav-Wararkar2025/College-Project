@@ -1,42 +1,72 @@
 {% extends 'noticeboard/base.html' %}
+
 {% block content %}
 
-<h2 class="mb-4 fw-bold">Latest Notices</h2>
+<!-- HERO SECTION -->
+<div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+    <div class="container-fluid py-4">
+        <h1 class="display-5 fw-bold">Digital Notice Board System</h1>
+        <p class="col-md-8 fs-5">
+            Always stay updated with the latest announcements from your college or institution.
+        </p>
+
+        <div class="d-flex gap-3">
+
+            <!-- Category Dropdown -->
+            <form method="GET">
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="all">All Notices</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}">
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            <!-- Sort Dropdown -->
+            <form method="GET">
+                <select name="sort" class="form-select" onchange="this.form.submit()">
+                    <option value="-created_at">Sort by Date (Newest)</option>
+                    <option value="created_at">Sort by Date (Oldest)</option>
+                </select>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- LATEST NOTICES -->
+<h3 class="mb-4">Latest Notices</h3>
 
 <div class="row">
 
     {% for notice in notices %}
-    <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card notice-card shadow-sm h-100">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
 
             <div class="card-body">
-                
-                <span class="badge bg-primary mb-2">
+                <span class="badge bg-warning text-dark">
                     {{ notice.category.name }}
                 </span>
 
-                <h5 class="card-title">{{ notice.title }}</h5>
-
-                <p class="card-text">
-                    {{ notice.content|truncatewords:20 }}
-                </p>
+                <h5 class="card-title mt-2">{{ notice.title }}</h5>
 
                 <small class="text-muted">
-                    {{ notice.created_at|date:"M d, Y" }}
+                    {{ notice.created_at|date:"F d, Y" }}
                 </small>
 
-                {% if notice.image %}
-    <img src="{{ notice.image.url }}" class="img-fluid rounded mb-2">
-{% endif %}
+                <p class="card-text mt-2">
+                    {{ notice.content|truncatewords:20 }}
+                </p>
             </div>
 
-            {% if user.is_authenticated %}
-            <div class="card-footer bg-transparent border-0">
+            {% if user.is_staff %}
+            <div class="card-footer bg-white border-0 text-end">
                 <a href="{% url 'edit_notice' notice.id %}"
                    class="btn btn-sm btn-outline-primary">
                    Edit
                 </a>
-
                 <a href="{% url 'delete_notice' notice.id %}"
                    class="btn btn-sm btn-outline-danger">
                    Delete
@@ -46,34 +76,8 @@
 
         </div>
     </div>
-    {% empty %}
-        <p>No notices available.</p>
     {% endfor %}
 
-    {% if notice.attachment %}
-    <a href="{{ notice.attachment.url }}" class="btn btn-sm btn-outline-secondary mt-2">
-        Download Attachment
-    </a>
-{% endif %}
-
 </div>
-
-
-
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card p-3 shadow-sm">
-            <h6>Total Notices</h6>
-            <h3>{{ total_notices }}</h3>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card p-3 shadow-sm">
-            <h6>Total Categories</h6>
-            <h3>{{ total_categories }}</h3>
-        </div>
-    </div>
-</div>
-
 
 {% endblock %}

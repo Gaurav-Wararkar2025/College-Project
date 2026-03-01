@@ -13,58 +13,23 @@ from .forms import NoticeForm
 # HOME VIEW (Dashboard + Filters + Pagination + Search)
 # ======================================================
 def home(request):
-    """
-    Public dashboard view with:
-    - Category filtering
-    - Search functionality
-    - Secure sorting
-    - Pagination
-    - Basic analytics
-    """
-
-    category_id = request.GET.get('category')
-    search_query = request.GET.get('search')
-    sort_order = request.GET.get('sort', '-created_at')
-
-    # 🔒 Secure sorting (prevent invalid field errors)
-    allowed_sorts = ['created_at', '-created_at', 'title', '-title']
-    if sort_order not in allowed_sorts:
-        sort_order = '-created_at'
-
-    notices = Notice.objects.all().order_by(sort_order)
-
-    # Category Filter
-    if category_id:
-        notices = notices.filter(category_id=category_id)
-
-    # Search Filter
-    if search_query:
-        notices = notices.filter(
-            Q(title__icontains=search_query) |
-            Q(content__icontains=search_query)
-        )
-
-    # Pagination (6 per page)
-    paginator = Paginator(notices, 6)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
+    notices = Notice.objects.all().order_by('-created_at')
     categories = Category.objects.all()
 
-    # Dashboard Analytics
-    total_notices = Notice.objects.count()
-    total_categories = Category.objects.count()
+    # Search
+    search = request.GET.get('search')
+    if search:
+        notices = notices.filter(title__icontains=search)
+
+    # Category Filter
+    category = request.GET.get('category')
+    if category and category != "all":
+        notices = notices.filter(category_id=category)
 
     context = {
-        'notices': page_obj,
+        'notices': notices,
         'categories': categories,
-        'total_notices': total_notices,
-        'total_categories': total_categories,
-        'search_query': search_query,
-        'selected_category': category_id,
-        'sort_order': sort_order,
     }
-
     return render(request, 'noticeboard/home.html', context)
 
 

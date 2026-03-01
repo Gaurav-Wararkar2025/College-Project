@@ -1,0 +1,79 @@
+{% extends 'noticeboard/base.html' %}
+{% block content %}
+
+<h2 class="mb-4 fw-bold">Latest Notices</h2>
+
+<div class="row">
+
+    {% for notice in notices %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card notice-card shadow-sm h-100">
+
+            <div class="card-body">
+                
+                <span class="badge bg-primary mb-2">
+                    {{ notice.category.name }}
+                </span>
+
+                <h5 class="card-title">{{ notice.title }}</h5>
+
+                <p class="card-text">
+                    {{ notice.content|truncatewords:20 }}
+                </p>
+
+                <small class="text-muted">
+                    {{ notice.created_at|date:"M d, Y" }}
+                </small>
+
+                {% if notice.image %}
+    <img src="{{ notice.image.url }}" class="img-fluid rounded mb-2">
+{% endif %}
+            </div>
+
+            {% if user.is_authenticated %}
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'edit_notice' notice.id %}"
+                   class="btn btn-sm btn-outline-primary">
+                   Edit
+                </a>
+
+                <a href="{% url 'delete_notice' notice.id %}"
+                   class="btn btn-sm btn-outline-danger">
+                   Delete
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    {% empty %}
+        <p>No notices available.</p>
+    {% endfor %}
+
+    {% if notice.attachment %}
+    <a href="{{ notice.attachment.url }}" class="btn btn-sm btn-outline-secondary mt-2">
+        Download Attachment
+    </a>
+{% endif %}
+
+</div>
+
+
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card p-3 shadow-sm">
+            <h6>Total Notices</h6>
+            <h3>{{ total_notices }}</h3>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3 shadow-sm">
+            <h6>Total Categories</h6>
+            <h3>{{ total_categories }}</h3>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

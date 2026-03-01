@@ -1,80 +1,93 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Digital Notice Board</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
 
-<body>
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4">
-    <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4">
+      <a class="navbar-brand fw-bold" href="{% url 'home' %}">
         🔔 Digital Notice Board
-    </a>
+      </a>
 
-    <div class="collapse navbar-collapse">
-
+      <div class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto ms-4">
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'home' %}">Home</a>
-            </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'home' %}">Home</a>
+          </li>
 
-            <!-- Categories Dropdown -->
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    Categories
+          <!-- Categories Dropdown -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+              Categories
+            </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="?category=all">All Notices</a>
+              </li>
+              {% for cat in categories %}
+              <li>
+                <a class="dropdown-item" href="?category={{ cat.id }}">
+                  {{ cat.name }}
                 </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="?category=all">All Notices</a></li>
-                    {% for cat in categories %}
-                        <li>
-                            <a class="dropdown-item"
-                               href="?category={{ cat.id }}">
-                                {{ cat.name }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </li>
+              </li>
+              {% endfor %}
+            </ul>
+          </li>
         </ul>
 
         <!-- Search -->
         <form method="GET" class="d-flex me-3">
-            <input class="form-control me-2"
-                   type="search"
-                   name="search"
-                   placeholder="Search Notices..."
-                   value="{{ request.GET.search }}">
-            <button class="btn btn-light">Search</button>
+          <input
+            class="form-control me-2"
+            type="search"
+            name="search"
+            placeholder="Search Notices..."
+            value="{{ request.GET.search }}"
+          />
+          <button class="btn btn-light">Search</button>
         </form>
 
         <!-- Admin Dropdown -->
         {% if user.is_authenticated %}
         <div class="dropdown">
-            <button class="btn btn-light dropdown-toggle"
-                    data-bs-toggle="dropdown">
-                Admin Dashboard
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a></li>
-                <li><a class="dropdown-item" href="{% url 'add_notice' %}">Add Notice</a></li>
-                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
-            </ul>
+          <button
+            class="btn btn-light dropdown-toggle"
+            data-bs-toggle="dropdown"
+          >
+            {{ user.username }}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <a class="dropdown-item" href="{% url 'dashboard' %}"
+                >Dashboard</a
+              >
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'add_notice' %}"
+                >Add Notice</a
+              >
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+            </li>
+          </ul>
         </div>
         {% else %}
-            <a href="{% url 'login' %}" class="btn btn-light">Login</a>
+        <a href="{% url 'login' %}" class="btn btn-light">Login</a>
         {% endif %}
-    </div>
-</nav>
+      </div>
+    </nav>
 
-<div class="container mt-4">
-    {% block content %}
-    {% endblock %}
-</div>
+    <div class="container mt-4">{% block content %} {% endblock %}</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

@@ -1,83 +1,92 @@
-{% extends 'noticeboard/base.html' %}
-
-{% block content %}
+{% extends 'noticeboard/base.html' %} {% block content %}
 
 <!-- HERO SECTION -->
 <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
-    <div class="container-fluid py-4">
-        <h1 class="display-5 fw-bold">Digital Notice Board System</h1>
-        <p class="col-md-8 fs-5">
-            Always stay updated with the latest announcements from your college or institution.
-        </p>
+  <div class="container-fluid py-4">
+    {% if notice.image %}
+    <img src="{{ notice.image.url }}"
+         class="img-fluid rounded mb-2"
+         style="height:150px; object-fit:cover;">
+{% endif %}
+    <h1 class="display-5 fw-bold">Digital Notice Board System</h1>
+    <p class="col-md-8 fs-5">
+      Always stay updated with the latest announcements from your college or
+      institution.
+    </p>
 
-        <div class="d-flex gap-3">
+    <div class="d-flex gap-3">
+      <!-- Category Dropdown -->
+      <form method="GET">
+        <select
+          name="category"
+          class="form-select"
+          onchange="this.form.submit()"
+        >
+          <option value="all">All Notices</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </form>
 
-            <!-- Category Dropdown -->
-            <form method="GET">
-                <select name="category" class="form-select" onchange="this.form.submit()">
-                    <option value="all">All Notices</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat.id }}">
-                            {{ cat.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </form>
-
-            <!-- Sort Dropdown -->
-            <form method="GET">
-                <select name="sort" class="form-select" onchange="this.form.submit()">
-                    <option value="-created_at">Sort by Date (Newest)</option>
-                    <option value="created_at">Sort by Date (Oldest)</option>
-                </select>
-            </form>
-
-        </div>
+      <!-- Sort Dropdown -->
+      <form method="GET">
+        <select name="sort" class="form-select" onchange="this.form.submit()">
+          <option value="-created_at">Sort by Date (Newest)</option>
+          <option value="created_at">Sort by Date (Oldest)</option>
+        </select>
+      </form>
     </div>
+  </div>
 </div>
 
 <!-- LATEST NOTICES -->
 <h3 class="mb-4">Latest Notices</h3>
 
 <div class="row">
+  {% for notice in notices %}
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <span class="badge bg-warning text-dark">
+          {{ notice.category.name }}
+        </span>
 
-    {% for notice in notices %}
-    <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100">
+        <h5 class="mt-2">
+          <a
+            href="{% url 'notice_detail' notice.id %}"
+            class="text-decoration-none text-dark"
+          >
+            {{ notice.title }}
+          </a>
+        </h5>
 
-            <div class="card-body">
-                <span class="badge bg-warning text-dark">
-                    {{ notice.category.name }}
-                </span>
+        <small class="text-muted">
+          {{ notice.created_at|date:"F d, Y" }}
+        </small>
 
-                <h5 class="card-title mt-2">{{ notice.title }}</h5>
+        <p class="card-text mt-2">{{ notice.content|truncatewords:20 }}</p>
+      </div>
 
-                <small class="text-muted">
-                    {{ notice.created_at|date:"F d, Y" }}
-                </small>
-
-                <p class="card-text mt-2">
-                    {{ notice.content|truncatewords:20 }}
-                </p>
-            </div>
-
-            {% if user.is_staff %}
-            <div class="card-footer bg-white border-0 text-end">
-                <a href="{% url 'edit_notice' notice.id %}"
-                   class="btn btn-sm btn-outline-primary">
-                   Edit
-                </a>
-                <a href="{% url 'delete_notice' notice.id %}"
-                   class="btn btn-sm btn-outline-danger">
-                   Delete
-                </a>
-            </div>
-            {% endif %}
-
-        </div>
+      {% if user.is_staff %}
+      <div class="card-footer bg-white border-0 text-end">
+        <a
+          href="{% url 'edit_notice' notice.id %}"
+          class="btn btn-sm btn-outline-primary"
+        >
+          Edit
+        </a>
+        <a
+          href="{% url 'delete_notice' notice.id %}"
+          class="btn btn-sm btn-outline-danger"
+        >
+          Delete
+        </a>
+      </div>
+      {% endif %}
     </div>
-    {% endfor %}
-
+  </div>
+  {% endfor %}
 </div>
 
 {% endblock %}

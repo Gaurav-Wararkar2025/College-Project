@@ -12,24 +12,43 @@ from .forms import NoticeForm
 # ======================================================
 # HOME VIEW (Dashboard + Filters + Pagination + Search)
 # ======================================================
+from django.db.models import Q
+from .models import Notice, Category
+
+
+from django.contrib.auth.decorators import user_passes_test
+
+def staff_check(user):
+    return user.is_staff
+
+
+@user_passes_test(staff_check)
 def home(request):
-    notices = Notice.objects.all().order_by('-created_at')
+    notices = Notice.objects.select_related('category').all()
     categories = Category.objects.all()
 
-    # Search
-    search = request.GET.get('search')
-    if search:
-        notices = notices.filter(title__icontains=search)
+    # SEARCH
+    search_query = request.GET.get('search')
+    if search_query:
+        notices = notices.filter(
+            Q(title__icontains=search_query) |
+            Q(content__icontains=search_query)
+        )
 
-    # Category Filter
-    category = request.GET.get('category')
-    if category and category != "all":
-        notices = notices.filter(category_id=category)
+    # CATEGORY FILTER
+    category_id = request.GET.get('category')
+    if category_id and category_id != "all":
+        notices = notices.filter(category_id=category_id)
+
+    # SORTING
+    sort = request.GET.get('sort', '-created_at')
+    notices = notices.order_by(sort)
 
     context = {
         'notices': notices,
         'categories': categories,
     }
+
     return render(request, 'noticeboard/home.html', context)
 
 
@@ -40,7 +59,7 @@ from django.db.models.functions import TruncMonth
 from django.db.models import Count
 from datetime import datetime
 
-
+@user_passes_test(staff_check)
 def dashboard(request):
     """
     Advanced Admin dashboard with:
@@ -101,6 +120,7 @@ def dashboard(request):
 # ===============================
 # ADD NOTICE (Staff Only)
 # ==================
+@user_passes_test(staff_check)
 @login_required(login_url='login')
 def add_notice(request):
     """
@@ -131,7 +151,7 @@ def add_notice(request):
 # ===============================
 # EDIT NOTICE (Staff Only)
 # ===============================
-@login_required(login_url='login')
+@user_passes_test(staff_check)
 def edit_notice(request, pk):
     """
     Only staff users can edit notices.
@@ -160,7 +180,7 @@ def edit_notice(request, pk):
 # ===============================
 # DELETE NOTICE (Staff Only)
 # ===============================
-@login_required(login_url='login')
+@user_passes_test(staff_check)
 def delete_notice(request, pk):
     """
     Only staff users can delete notices.
@@ -177,3 +197,42 @@ def delete_notice(request, pk):
         return redirect('home')
 
     return render(request, 'noticeboard/confirm_delete.html', {'notice': notice})
+
+
+
+
+from django.shortcuts import get_object_or_404
+
+
+def notice_detail(request, pk):
+    notice = get_object_or_404(Notice, pk=pk)
+
+    return render(request, 'noticeboard/notice_detail.html', {
+        'notice': notice
+    })
+
+
+
+
+from django.contrib.auth import authenticate, login
+from django.shortcuts import redirect
+
+
+@user_passes_test(staff_check)
+def login_view(request):
+
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            login(request, user)
+
+            if user.is_staff:
+                return redirect('dashboard')
+            else:
+                return redirect('home')
+
+    return render(request, 'noticeboard/login.html')

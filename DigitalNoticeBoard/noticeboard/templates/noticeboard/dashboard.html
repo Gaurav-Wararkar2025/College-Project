@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block page_title %}Advanced Admin Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="row mb-4">
+
+    <!-- Total Notices -->
+    <div class="col-md-4">
+        <div class="card dashboard-card text-center p-4">
+            <h6>Total Notices</h6>
+            <h2 class="fw-bold text-primary">
+                {{ total_notices }}
+                <span id="liveBadge" class="badge bg-danger ms-2">
+                    🔔
+                </span>
+            </h2>
+        </div>
+    </div>
+
+    <!-- Total Categories -->
+    <div class="col-md-4">
+        <div class="card dashboard-card text-center p-4">
+            <h6>Total Categories</h6>
+            <h2 class="fw-bold text-success">{{ total_categories }}</h2>
+        </div>
+    </div>
+
+</div>
+
+<!-- Charts Section -->
+<div class="row">
+
+    <!-- Pie Chart -->
+    <div class="col-md-6 mb-4">
+        <div class="card dashboard-card p-4">
+            <h6>Category Distribution</h6>
+            <canvas id="pieChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Trend Line Chart -->
+    <div class="col-md-6 mb-4">
+        <div class="card dashboard-card p-4">
+            <h6>Monthly Notice Growth</h6>
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<!-- Latest Notices -->
+<div class="card dashboard-card p-4">
+    <h6>Latest Notices</h6>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for notice in latest_notices %}
+            <tr>
+                <td>{{ notice.title }}</td>
+                <td>{{ notice.category.name }}</td>
+                <td>{{ notice.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // ---------------- PIE CHART ----------------
+    new Chart(document.getElementById('pieChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                data: {{ category_counts|safe }},
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+    // ---------------- TREND LINE CHART ----------------
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: {{ trend_labels|safe }},
+            datasets: [{
+                label: 'Notices',
+                data: {{ trend_counts|safe }},
+                fill: false,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+    // ---------------- REAL-TIME BADGE (Auto Refresh Count) ----------------
+    setInterval(function() {
+        fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newCount = doc.querySelector('#liveBadge').innerText;
+            document.querySelector('#liveBadge').innerText = newCount;
+        });
+    }, 10000); // refresh every 10 sec
+
+</script>
+
+{% endblock %}

@@ -9,22 +9,27 @@ from .models import Notice, Category
 from .forms import NoticeForm
 
 
-# ===============================
-# HOME VIEW (Dashboard + Filters)
-# ===============================
+# ======================================================
+# HOME VIEW (Dashboard + Filters + Pagination + Search)
+# ======================================================
 def home(request):
     """
-    Displays all notices with:
+    Public dashboard view with:
     - Category filtering
     - Search functionality
-    - Sorting
+    - Secure sorting
     - Pagination
-    - Dashboard analytics
+    - Basic analytics
     """
 
     category_id = request.GET.get('category')
     search_query = request.GET.get('search')
     sort_order = request.GET.get('sort', '-created_at')
+
+    # 🔒 Secure sorting (prevent invalid field errors)
+    allowed_sorts = ['created_at', '-created_at', 'title', '-title']
+    if sort_order not in allowed_sorts:
+        sort_order = '-created_at'
 
     notices = Notice.objects.all().order_by(sort_order)
 
@@ -39,7 +44,7 @@ def home(request):
             Q(content__icontains=search_query)
         )
 
-    # Pagination (6 notices per page)
+    # Pagination (6 per page)
     paginator = Paginator(notices, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -57,18 +62,84 @@ def home(request):
         'total_categories': total_categories,
         'search_query': search_query,
         'selected_category': category_id,
+        'sort_order': sort_order,
     }
 
     return render(request, 'noticeboard/home.html', context)
 
 
 # ===============================
-# ADD NOTICE
+# ADMIN DASHBOARD (Advanced View)
 # ===============================
-@login_required
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
+from datetime import datetime
+
+@login_required(login_url='login')
+def dashboard(request):
+    """
+    Advanced Admin dashboard with:
+    - Total analytics
+    - Category distribution
+    - Monthly growth trend
+    """
+
+    notices = Notice.objects.all().order_by('-created_at')
+    total_notices = notices.count()
+    total_categories = Category.objects.count()
+    latest_notices = notices[:5]
+
+    # -------------------------
+    # Category Pie Chart Data
+    # -------------------------
+    categories = Category.objects.all()
+    category_labels = []
+    category_counts = []
+
+    for category in categories:
+        category_labels.append(category.name)
+        category_counts.append(
+            Notice.objects.filter(category=category).count()
+        )
+
+    # -------------------------
+    # Monthly Trend Graph Data
+    # -------------------------
+    monthly_data = (
+        Notice.objects
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+
+    trend_labels = []
+    trend_counts = []
+
+    for entry in monthly_data:
+        trend_labels.append(entry['month'].strftime("%b %Y"))
+        trend_counts.append(entry['count'])
+
+    context = {
+        'total_notices': total_notices,
+        'total_categories': total_categories,
+        'latest_notices': latest_notices,
+        'category_labels': category_labels,
+        'category_counts': category_counts,
+        'trend_labels': trend_labels,
+        'trend_counts': trend_counts,
+    }
+
+    return render(request, 'noticeboard/dashboard.html', context)
+
+
+# ===============================
+# ADD NOTICE (Staff Only)
+# ==================
+@login_required(login_url='login')
 def add_notice(request):
     """
-    Allows only staff/admin users to add notice.
+    Only staff users can add notices.
     """
 
     if not request.user.is_staff:
@@ -93,12 +164,12 @@ def add_notice(request):
 
 
 # ===============================
-# EDIT NOTICE
+# EDIT NOTICE (Staff Only)
 # ===============================
-@login_required
+@login_required(login_url='login')
 def edit_notice(request, pk):
     """
-    Allows only staff/admin users to edit notice.
+    Only staff users can edit notices.
     """
 
     if not request.user.is_staff:
@@ -122,12 +193,12 @@ def edit_notice(request, pk):
 
 
 # ===============================
-# DELETE NOTICE
+# DELETE NOTICE (Staff Only)
 # ===============================
-@login_required
+@login_required(login_url='login')
 def delete_notice(request, pk):
     """
-    Allows only staff/admin users to delete notice.
+    Only staff users can delete notices.
     """
 
     if not request.user.is_staff:

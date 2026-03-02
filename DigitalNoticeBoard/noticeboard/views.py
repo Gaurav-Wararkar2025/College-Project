@@ -232,20 +232,22 @@ def delete_notice(request, pk):
 
 
 
-
 from django.shortcuts import get_object_or_404
-
+from django.utils import timezone
 
 def notice_detail(request, pk):
+
     notice = get_object_or_404(Notice, pk=pk)
+
+    # Increment views count
     notice.views_count += 1
     notice.save()
-    notices = notices.order_by('-is_pinned', '-created_at')
 
-    return render(request, 'noticeboard/notice_detail.html', {
+    context = {
         'notice': notice
-    })
+    }
 
+    return render(request, 'noticeboard/notice_detail.html', context)
 
 
 from django.contrib.auth import authenticate, login, logout

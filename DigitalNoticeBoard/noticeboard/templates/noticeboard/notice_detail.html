@@ -1,32 +1,146 @@
 {% extends 'noticeboard/base.html' %}
-
 {% block content %}
 
-<div class="card shadow-sm p-4">
+<style>
+.notice-container {
+    max-width: 900px;
+    margin: 40px auto;
+}
 
-    <span class="badge bg-primary">
-        {{ notice.category.name }}
-    </span>
+.notice-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
 
-    <h2 class="mt-3">{{ notice.title }}</h2>
+.notice-header {
+    background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+    color: white;
+    padding: 15px 25px;
+}
 
-    <p class="text-muted">
-        Posted on {{ notice.created_at|date:"F d, Y" }}
-    </p>
+.notice-title {
+    font-weight: 700;
+    font-size: 28px;
+}
 
-    {% if notice.image %}
-        <img src="{{ notice.image.url }}"
-             class="img-fluid rounded mb-3">
-    {% endif %}
+.notice-meta {
+    font-size: 14px;
+    opacity: 0.9;
+}
 
-    <p>{{ notice.content }}</p>
+.notice-body {
+    padding: 30px;
+    background: #ffffff;
+}
 
-    {% if notice.attachment %}
-        <a href="{{ notice.attachment.url }}"
-           class="btn btn-outline-secondary mt-3">
-           Download Attachment
-        </a>
-    {% endif %}
+.notice-content {
+    white-space: pre-line;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.notice-footer {
+    background: #f8f9fa;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge-priority-high {
+    background-color: #dc3545;
+}
+
+.badge-priority-medium {
+    background-color: #ffc107;
+    color: black;
+}
+
+.badge-priority-low {
+    background-color: #6c757d;
+}
+
+.download-btn {
+    border-radius: 25px;
+}
+</style>
+
+<div class="notice-container">
+
+    <div class="card notice-card">
+
+        <!-- HEADER -->
+        <div class="notice-header d-flex justify-content-between align-items-center">
+            <div>
+                <div class="notice-title">
+                    {{ notice.title }}
+                </div>
+                <div class="notice-meta">
+                    Posted on {{ notice.created_at|date:"F d, Y" }} |
+                    Views: {{ notice.views_count }}
+                </div>
+            </div>
+
+            <div>
+                <!-- PRIORITY BADGE -->
+                {% if notice.priority == 'high' %}
+                    <span class="badge badge-priority-high">High Priority</span>
+                {% elif notice.priority == 'medium' %}
+                    <span class="badge badge-priority-medium">Medium Priority</span>
+                {% else %}
+                    <span class="badge badge-priority-low">Low Priority</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="notice-body">
+
+            <div class="mb-3">
+                <span class="badge bg-info">
+                    {{ notice.category.name }}
+                </span>
+
+                {% if notice.is_pinned %}
+                    <span class="badge bg-primary">Pinned</span>
+                {% endif %}
+            </div>
+
+            <div class="notice-content">
+                {{ notice.content|linebreaks }}
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="notice-footer">
+
+            <div>
+                ❤️ {{ notice.likes.count }} Likes
+            </div>
+
+            <div class="d-flex gap-2">
+
+                {% if notice.attachment %}
+                    <a href="{{ notice.attachment.url }}"
+                       class="btn btn-success download-btn"
+                       download>
+                        Download Attachment
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'home' %}"
+                   class="btn btn-outline-secondary download-btn">
+                    Back
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 

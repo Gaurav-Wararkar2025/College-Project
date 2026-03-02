@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'noticeboard',
+    'noticeboard.apps.NoticeboardConfig',
 ]
 
 MIDDLEWARE = [
@@ -128,3 +128,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+
+
+
+# -------------------------------
+# EMAIL CONFIGURATION
+# -------------------------------
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+

@@ -1,0 +1,21 @@
+{% extends 'noticeboard/base.html' %}
+
+{% block content %}
+<h3>Notice Analytics</h3>
+
+<table class="table">
+    <tr>
+        <th>Title</th>
+        <th>Views</th>
+        <th>Likes</th>
+    </tr>
+
+    {% for notice in notices %}
+    <tr>
+        <td>{{ notice.title }}</td>
+        <td>{{ notice.views_count }}</td>
+        <td>{{ notice.likes.count }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -7,6 +7,7 @@ from django.http import HttpResponseForbidden
 
 from .models import Notice, Category
 from .forms import NoticeForm
+from django.utils import timezone
 
 
 # ======================================================
@@ -21,29 +22,49 @@ from django.contrib.auth.decorators import user_passes_test
 def staff_check(user):
     return user.is_staff
 
+from django.db import models
 
 def home(request):
-    
-    
+
     notices = Notice.objects.select_related('category').all()
     categories = Category.objects.all()
 
+    # -------------------------------------------------
+    # EXPIRY FILTER (Hide expired notices)
+    # -------------------------------------------------
+    notices = notices.filter(
+        models.Q(expiry_date__isnull=True) |
+        models.Q(expiry_date__gt=timezone.now())
+    )
+
+    # -------------------------------------------------
+    # ROLE-BASED DEPARTMENT FILTER
+    # -------------------------------------------------
+    #if request.user.is_authenticated:
+     #   user_dept = request.user.profile.department
+      #  notices = notices.filter(department=user_dept)
+
+    # -------------------------------------------------
     # SEARCH
+    # -------------------------------------------------
     search_query = request.GET.get('search')
     if search_query:
         notices = notices.filter(
-            Q(title__icontains=search_query) |
-            Q(content__icontains=search_query)
+            title__icontains=search_query
         )
 
+    # -------------------------------------------------
     # CATEGORY FILTER
+    # -------------------------------------------------
     category_id = request.GET.get('category')
     if category_id and category_id != "all":
         notices = notices.filter(category_id=category_id)
 
-    # SORTING
+    # -------------------------------------------------
+    # PINNING + SORTING
+    # -------------------------------------------------
     sort = request.GET.get('sort', '-created_at')
-    notices = notices.order_by(sort)
+    notices = notices.order_by('-is_pinned', sort)
 
     context = {
         'notices': notices,
@@ -51,7 +72,6 @@ def home(request):
     }
 
     return render(request, 'noticeboard/home.html', context)
-
 
 # ===============================
 # ADMIN DASHBOARD (Advanced View)
@@ -184,24 +204,31 @@ def edit_notice(request, pk):
 # ===============================
 # DELETE NOTICE (Staff Only)
 # ===============================
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import HttpResponseForbidden
+from django.contrib import messages
+from .models import Notice
+
+def staff_check(user):
+    return user.is_staff
+
+
 @login_required(login_url='login')
 @user_passes_test(staff_check)
 def delete_notice(request, pk):
-    """
-    Only staff users can delete notices.
-    """
-
-    if not request.user.is_staff:
-        return HttpResponseForbidden("You are not authorized to delete notices.")
 
     notice = get_object_or_404(Notice, pk=pk)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         notice.delete()
         messages.success(request, "Notice deleted successfully.")
         return redirect('home')
 
-    return render(request, 'noticeboard/confirm_delete.html', {'notice': notice})
+    # If GET → show confirmation page
+    return render(request, 'noticeboard/confirm_delete.html', {
+        'notice': notice
+    })
 
 
 
@@ -211,6 +238,9 @@ from django.shortcuts import get_object_or_404
 
 def notice_detail(request, pk):
     notice = get_object_or_404(Notice, pk=pk)
+    notice.views_count += 1
+    notice.save()
+    notices = notices.order_by('-is_pinned', '-created_at')
 
     return render(request, 'noticeboard/notice_detail.html', {
         'notice': notice
@@ -252,3 +282,31 @@ from django.contrib.auth import logout
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+
+
+from django.http import JsonResponse
+
+@login_required(login_url='login')
+def like_notice(request, pk):
+
+    notice = get_object_or_404(Notice, pk=pk)
+
+    if request.user in notice.likes.all():
+        notice.likes.remove(request.user)
+        liked = False
+    else:
+        notice.likes.add(request.user)
+        liked = True
+
+    return JsonResponse({
+        'liked': liked,
+        'total_likes': notice.likes.count()
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(staff_check)
+def analytics_dashboard(request):
+    notices = Notice.objects.all()
+    return render(request, 'noticeboard/analytics.html', {'notices': notices})

@@ -1,0 +1,35 @@
+{% extends 'noticeboard/base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow p-4">
+
+            <h4 class="text-danger">Confirm Delete</h4>
+
+            <p>
+                Are you sure you want to delete:
+            </p>
+
+            <div class="alert alert-warning">
+                <strong>{{ notice.title }}</strong>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <button type="submit" class="btn btn-danger">
+                    Yes, Delete
+                </button>
+
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

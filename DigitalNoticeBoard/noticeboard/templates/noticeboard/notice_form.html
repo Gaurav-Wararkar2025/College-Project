@@ -5,37 +5,24 @@
     <h3 class="mb-3">Add / Edit Notice</h3>
 
     <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
+    {% csrf_token %}
 
+    {{ form.non_field_errors }}
+
+    {% for field in form %}
         <div class="mb-3">
-            {{ form.title.label_tag }}
-            {{ form.title }}
+            {{ field.label_tag }}
+            {{ field }}
+            <div class="text-danger">
+                {{ field.errors }}
+            </div>
         </div>
+    {% endfor %}
 
-        <div class="mb-3">
-            {{ form.content.label_tag }}
-            {{ form.content }}
-        </div>
-
-        <div class="mb-3">
-            {{ form.category.label_tag }}
-            {{ form.category }}
-        </div>
-
-        <div class="mb-3">
-            {{ form.image.label_tag }}
-            {{ form.image }}
-        </div>
-
-        <div class="mb-3">
-            {{ form.attachment.label_tag }}
-            {{ form.attachment }}
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-            Submit
-        </button>
-    </form>
+    <button type="submit" class="btn btn-primary">
+        Submit
+    </button>
+</form>
 </div>
 
 {% endblock %}

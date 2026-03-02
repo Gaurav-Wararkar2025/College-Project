@@ -11,4 +11,6 @@ urlpatterns = [
     path('notice/<int:pk>/', views.notice_detail, name='notice_detail'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('analytics/', views.analytics_dashboard, name='analytics'),
+    path('like/<int:pk>/', views.like_notice, name='like_notice'),
 ]

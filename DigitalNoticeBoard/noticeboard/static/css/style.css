@@ -143,3 +143,14 @@ textarea:focus {
     border-color: var(--neon-blue) !important;
     box-shadow: 0 0 0 3px rgba(0, 162, 255, 0.2) !important;
 }
+
+.deptt{
+    background-color: #ff00ff;
+    padding: 4px 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    border-radius: 6px !important;
+    text-transform: uppercase;
+    font-size: 0.7rem !important;
+    
+}

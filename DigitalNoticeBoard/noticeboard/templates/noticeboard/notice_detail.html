@@ -2,146 +2,194 @@
 {% block content %}
 
 <style>
-.notice-container {
-    max-width: 900px;
-    margin: 40px auto;
-}
+    /* 1. Page & Container Setup */
+    .notice-container {
+        max-width: 950px;
+        margin: 50px auto;
+        padding: 0 15px;
+    }
 
-.notice-card {
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    overflow: hidden;
-}
+    /* 2. The Main Glassmorphism Card */
+    .notice-card {
+        background: rgba(22, 27, 34, 0.8) !important;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 24px !important;
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5) !important;
+    }
 
-.notice-header {
-    background: linear-gradient(90deg, #0d6efd, #0b5ed7);
-    color: white;
-    padding: 15px 25px;
-}
+    /* 3. Header Styling - Accented Top Border */
+    .notice-header {
+        padding: 40px 40px 20px 40px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        /* Accented Top Glow based on priority logic can be added here */
+    }
 
-.notice-title {
-    font-weight: 700;
-    font-size: 28px;
-}
+    .notice-title {
+        font-weight: 800;
+        font-size: 36px;
+        color: #f0f6fc;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+        margin-bottom: 10px;
+    }
 
-.notice-meta {
-    font-size: 14px;
-    opacity: 0.9;
-}
+    .notice-meta {
+        font-size: 14px;
+        color: #8b949e;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
 
-.notice-body {
-    padding: 30px;
-    background: #ffffff;
-}
+    /* 4. Body Content Styling */
+    .notice-body {
+        padding: 20px 40px 40px 40px;
+        color: #c9d1d9;
+    }
 
-.notice-content {
-    white-space: pre-line;
-    font-size: 16px;
-    line-height: 1.7;
-}
+    .notice-content {
+        white-space: pre-line;
+        font-size: 18px;
+        line-height: 1.8;
+        background: rgba(13, 17, 23, 0.4);
+        padding: 25px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+    }
 
-.notice-footer {
-    background: #f8f9fa;
-    padding: 20px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+    /* 5. Footer & Buttons */
+    .notice-footer {
+        background: rgba(1, 4, 9, 0.4);
+        padding: 25px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
 
-.badge-priority-high {
-    background-color: #dc3545;
-}
+    .like-stat {
+        color: #ff4d4d;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-.badge-priority-medium {
-    background-color: #ffc107;
-    color: black;
-}
+    /* Neon Buttons */
+    .btn-action {
+        border-radius: 12px;
+        padding: 10px 24px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+    }
 
-.badge-priority-low {
-    background-color: #6c757d;
-}
+    .btn-download {
+        background: #00ff88 !important;
+        color: #010409 !important;
+        border: none !important;
+        box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+    }
 
-.download-btn {
-    border-radius: 25px;
-}
+    .btn-download:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+    }
+
+    .btn-back {
+        background: transparent !important;
+        border: 1px solid #30363d !important;
+        color: #f0f6fc !important;
+    }
+
+    .btn-back:hover {
+        background: #30363d !important;
+        transform: translateX(-5px);
+    }
+
+    /* Priority Badge Variations */
+    .badge-prio {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 800;
+    }
+
+    .high-p { background: rgba(255, 77, 77, 0.15); color: #ff4d4d; border: 1px solid #ff4d4d; }
+    .med-p { background: rgba(255, 204, 0, 0.15); color: #ffcc00; border: 1px solid #ffcc00; }
+    .low-p { background: rgba(139, 148, 158, 0.15); color: #8b949e; border: 1px solid #8b949e; }
+
 </style>
 
 <div class="notice-container">
-
     <div class="card notice-card">
-
-        <!-- HEADER -->
-        <div class="notice-header d-flex justify-content-between align-items-center">
-            <div>
-                <div class="notice-title">
-                    {{ notice.title }}
+        
+        <div class="notice-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="notice-title">{{ notice.title }}</h1>
+                    <div class="notice-meta">
+                        <span>📅 {{ notice.created_at|date:"F d, Y" }}</span>
+                        <span>•</span>
+                        <span>👁️ {{ notice.views_count }} Views</span>
+                    </div>
                 </div>
-                <div class="notice-meta">
-                    Posted on {{ notice.created_at|date:"F d, Y" }} |
-                    Views: {{ notice.views_count }}
+                
+                <div>
+                    {% if notice.priority == 'high' %}
+                        <span class="badge-prio high-p">High Priority</span>
+                    {% elif notice.priority == 'medium' %}
+                        <span class="badge-prio med-p">Medium Priority</span>
+                    {% else %}
+                        <span class="badge-prio low-p">Low Priority</span>
+                    {% endif %}
                 </div>
-            </div>
-
-            <div>
-                <!-- PRIORITY BADGE -->
-                {% if notice.priority == 'high' %}
-                    <span class="badge badge-priority-high">High Priority</span>
-                {% elif notice.priority == 'medium' %}
-                    <span class="badge badge-priority-medium">Medium Priority</span>
-                {% else %}
-                    <span class="badge badge-priority-low">Low Priority</span>
-                {% endif %}
             </div>
         </div>
 
-        <!-- BODY -->
         <div class="notice-body">
-
-            <div class="mb-3">
-                <span class="badge bg-info">
-                    {{ notice.category.name }}
+            <div class="d-flex gap-2 mb-4">
+                <span class="badge rounded-pill bg-info text-dark fw-bold px-3">
+                    # {{ notice.category.name }}
                 </span>
 
                 {% if notice.is_pinned %}
-                    <span class="badge bg-primary">Pinned</span>
+                    <span class="badge rounded-pill bg-primary fw-bold px-3">
+                        📌 Pinned Notice
+                    </span>
                 {% endif %}
             </div>
 
             <div class="notice-content">
                 {{ notice.content|linebreaks }}
             </div>
-
         </div>
 
-        <!-- FOOTER -->
         <div class="notice-footer">
-
-            <div>
-                ❤️ {{ notice.likes.count }} Likes
+            <div class="like-stat">
+                ❤️ {{ notice.likes.count }} <span style="font-size: 0.9rem; color: #8b949e;">Interactions</span>
             </div>
 
-            <div class="d-flex gap-2">
-
+            <div class="d-flex gap-3">
                 {% if notice.attachment %}
-                    <a href="{{ notice.attachment.url }}"
-                       class="btn btn-success download-btn"
-                       download>
-                        Download Attachment
+                    <a href="{{ notice.attachment.url }}" class="btn btn-action btn-download" download>
+                        💾 Download File
                     </a>
                 {% endif %}
 
-                <a href="{% url 'home' %}"
-                   class="btn btn-outline-secondary download-btn">
-                    Back
+                <a href="{% url 'home' %}" class="btn btn-action btn-back">
+                    ⬅️ Back to Board
                 </a>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 {% endblock %}

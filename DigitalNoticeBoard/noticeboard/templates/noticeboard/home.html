@@ -58,7 +58,7 @@
 
       <div class="card-body">
 
-        # PRIORITY BADGE 
+        <!--Priority-->
         {% if notice.priority == 'high' %}
           <span class="badge bg-danger">High</span>
         {% elif notice.priority == 'medium' %}
@@ -67,12 +67,16 @@
           <span class="badge bg-secondary">Low</span>
         {% endif %}
 
-        #PIN BADGE
         {% if notice.is_pinned %}
           <span class="badge bg-primary">Pinned</span>
         {% endif %}
 
      <!-- CATEGORY-->
+
+        <span class="deptt text-dark">
+          {{ notice.department }}
+        </span>
+
         <span class="badge bg-info text-dark">
           {{ notice.category.name }}
         </span>

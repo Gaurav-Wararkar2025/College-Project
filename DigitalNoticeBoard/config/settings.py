@@ -143,3 +143,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 
+# Ensure these are set to True
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+# Add this to allow the format seen in your screenshot
+DATETIME_INPUT_FORMATS = [
+    '%d/%m/%Y %H:%M',  # 20/03/2026 14:30
+    '%d/%m/%Y',        # 20/03/2026
+    '%Y-%m-%dT%H:%M',  # Required for HTML5 datetime-local input
+]

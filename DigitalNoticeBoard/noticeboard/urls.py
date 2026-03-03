@@ -13,4 +13,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('analytics/', views.analytics_dashboard, name='analytics'),
     path('like/<int:pk>/', views.like_notice, name='like_notice'),
+    path('users/', views.user_list, name='user_list'),
+    path('users/toggle/<int:user_id>/', views.toggle_user_status, name='toggle_user_status'),
 ]

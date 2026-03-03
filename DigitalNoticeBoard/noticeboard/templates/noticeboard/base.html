@@ -1,92 +1,215 @@
-
 {% load static %}
 <!doctype html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Digital Notice Board</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/style.css' %}" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <style>
+        :root {
+            --side-blue: #1e3a8a;
+            --side-hover: rgba(255, 255, 255, 0.1);
+            --bg-body: #0d1117;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR STYLING */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--side-blue);
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .sidebar-brand {
+            padding: 10px 25px 30px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            padding: 14px 25px;
+            margin: 4px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .sidebar .nav-link:hover {
+            background: var(--side-hover);
+            color: white !important;
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white !important;
+        }
+
+        /* TOP NAVBAR ADJUSTMENT */
+        .top-nav {
+            margin-left: var(--sidebar-width);
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        /* CONTENT AREA */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        /* SEARCH BAR INTERACTIVE STYLING */
+        .custom-search { 
+            width: 250px; 
+            border-radius: 10px; 
+            transition: 0.3s; 
+            height: 40px; 
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+            color: white !important;
+        }
+        /* Makes placeholder clearly visible */
+        .custom-search::placeholder { 
+            color: #adb5bd !important; 
+            opacity: 1 !important; 
+        }
+        .custom-search:focus { 
+            width: 350px; 
+            border-color: #00a2ff !important; 
+            box-shadow: 0 0 10px rgba(0,162,255,0.4) !important; 
+        }
+
+        /* FOOTER / PROFILE */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-card {
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+    </style>
   </head>
+
   {% load django_browser_reload %}
-{% django_browser_reload_script %}
+  {% django_browser_reload_script %}
+
   <body>
-    <!--NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4">
-      <a class="navbar-brand fw-bold" href="{% url 'home' %}">
-        🔔 Digital Notice Board
+    <aside class="sidebar">
+      <a class="sidebar-brand" href="{% url 'home' %}">
+        📢 <span>Notice Board</span>
       </a>
 
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav me-auto ms-4">
-          <li class="nav-item">
-            <a class="nav-link active" href="{% url 'home' %}">Home</a>
-          </li>
+      <nav class="nav flex-column">
+        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+          <i class="fa-solid fa-house"></i> Home
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+          <i class="fa-solid fa-chart-line"></i> Dashboard
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'add_notice' %}active{% endif %}" href="{% url 'add_notice' %}">
+          <i class="fa-solid fa-plus-circle"></i> Add Notice
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}" href="{% url 'user_list' %}">
+            <i class="fa-solid fa-users-gear"></i> User Management
+        </a>
+        <a class="nav-link text-danger mt-3" href="{% url 'logout' %}">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </a>
+      </nav>
 
-          <!--Categories Dropdown-->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-              Categories
-            </a>
-            <ul class="dropdown-menu">
-              <li>
-                <a class="dropdown-item" href="?category=all">All Notices</a>
-              </li>
-              {% for cat in categories %}
-              <li>
-                <a class="dropdown-item" href="?category={{ cat.id }}">
-                  {{ cat.name }}
-                </a>
-              </li>
-              {% endfor %}
-            </ul>
-          </li>
-        </ul>
-
-        <!-- Search -->
-        <form method="GET" class="d-flex me-3">
-          <input
-            class="form-control me-2"
-            type="search"
-            name="search"
-            placeholder="Search Notices..."
-            value="{{ request.GET.search }}"
-          />
-          <button class="btn btn-light">Search</button>
-        </form>
-
-        <!-- Admin Dropdown-->
-               
-      
-         
-        <div class="dropdown">
-          <button
-            class="btn btn-light dropdown-toggle"
-            data-bs-toggle="dropdown"
-          >
-            {{ user.username }}
-            Admin Profile
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li>
-              <a class="dropdown-item" href="{% url 'dashboard' %}"
-                >Dashboard</a
-              >
-            </li>
-            <li>
-              <a class="dropdown-item" href="{% url 'add_notice' %}"
-                >Add Notice</a
-              >
-            </li>
-            <li>
-              <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-            </li>
-          </ul>
-        </div>
+      <div class="sidebar-footer">
+          <div class="profile-card">
+              <div class="profile-img">{{ user.username|first|upper }}</div>
+              <div class="overflow-hidden">
+                  <div class="small fw-bold text-white">{{ user.username }}</div>
+                  <div class="text-muted" style="font-size: 0.7rem;">Administrator</div>
+              </div>
+          </div>
       </div>
-    </nav>
+    </aside>
 
-    <div class="container mt-4">{% block content %} {% endblock %}</div>
+    <header class="top-nav d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">📢 {% block page_title %}Notices Overview{% endblock %}</h5>
+        
+        <div class="d-flex align-items-center gap-3">
+            <form method="GET" class="position-relative d-flex align-items-center">
+                <span class="position-absolute ms-3" style="pointer-events: none;">🔍</span>
+                <input name="search" type="search" placeholder="Search notices..." 
+                       class="form-control ps-5 custom-search"
+                       value="{{ request.GET.search }}">
+            </form>
+
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle border-secondary" type="button" data-bs-toggle="dropdown">
+                    Categories
+                </button>
+                <ul class="dropdown-menu dropdown-menu-dark">
+                    <li><a class="dropdown-item" href="?category=all">All Notices</a></li>
+                    {% for cat in categories %}
+                        <li><a class="dropdown-item" href="?category={{ cat.id }}">{{ cat.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-wrapper">
+        {% block content %} {% endblock %}
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   </body>

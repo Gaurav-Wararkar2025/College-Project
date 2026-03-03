@@ -1,141 +1,170 @@
 {% extends 'noticeboard/base.html' %}
 {% block content %}
 
+<style>
+    /* 1. Global Card & Layout Enhancements */
+    .hero-glass {
+        background: rgba(22, 27, 34, 0.7) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
 
-<!-- HERO SECTION -->
-<div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
-  <div class="container-fluid py-4">
+    .notice-card {
+        background: #0d1117 !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px !important;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+    }
 
-    <h1 class="display-5 fw-bold">Digital Notice Board System</h1>
-    <p class="col-md-8 fs-5">
-      Always stay updated with the latest announcements from your college or institution.
+    .notice-card:hover {
+        transform: translateY(-8px);
+        border-color: #00a2ff !important;
+        box-shadow: 0 10px 30px rgba(0, 162, 255, 0.15) !important;
+    }
+
+    /* 2. Layering for Stretched Link */
+    /* This ensures buttons and badges sit ABOVE the clickable card area */
+    .z-top {
+        position: relative;
+        z-index: 5;
+    }
+
+    .card-title-link::after {
+        /* This expands the link to cover the card */
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        content: "";
+    }
+
+    .card-footer {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .deptt {
+        color: #8b949e;
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="p-5 mb-5 hero-glass rounded-4 shadow-lg">
+  <div class="container-fluid py-2">
+    <h1 class="display-5 fw-bold text-info">Digital Notice Board</h1>
+    <p class="col-md-8 fs-5 text-secondary">
+      Stay synchronized with the latest institutional announcements and updates in real-time.
     </p>
 
-    <div class="d-flex gap-3">
-
-     <!-- Category Dropdown -->
-      <form method="GET">
-        <select name="category"
-                class="form-select"
-                onchange="this.form.submit()">
-          <option value="all">All Notices</option>
+    <div class="d-flex gap-3 mt-4">
+      <form method="GET" class="z-top">
+        <select name="category" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+          <option value="all">All Categories</option>
           {% for cat in categories %}
-            <option value="{{ cat.id }}">
+            <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
               {{ cat.name }}
             </option>
           {% endfor %}
         </select>
       </form>
 
-      <!-- Sort Dropdown -->
-      <form method="GET">
-        <select name="sort"
-                class="form-select"
-                onchange="this.form.submit()">
-          <option value="-created_at">Sort by Date (Newest)</option>
-          <option value="created_at">Sort by Date (Oldest)</option>
+      <form method="GET" class="z-top">
+        <select name="sort" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+          <option value="-created_at" {% if request.GET.sort == "-created_at" %}selected{% endif %}>Newest First</option>
+          <option value="created_at" {% if request.GET.sort == "created_at" %}selected{% endif %}>Oldest First</option>
         </select>
       </form>
-
     </div>
   </div>
 </div>
 
-<!-- LATEST NOTICES-->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="mb-0">Latest Notices</h3>
-    <a href="{% url 'add_notice' %}" class="btn btn-success fw-bold rounded-pill px-4" 
+    <h3 class="mb-0 fw-bold">Latest Notices</h3>
+    <a href="{% url 'add_notice' %}" class="btn btn-success fw-bold rounded-pill px-4 z-top" 
        style="background: #00ff88; color: black; border: none; box-shadow: 0 0 15px rgba(0,255,136,0.4);">
        + Create Notice
     </a>
 </div>
 
 <div class="row">
-
   {% for notice in notices %}
   <div class="col-md-4 mb-4">
-    <div class="card shadow-sm h-100">
+    <div class="card notice-card h-100 position-relative">
+      <div class="card-body d-flex flex-column">
+        
+        <div class="mb-2 z-top">
+          {% if notice.priority == 'high' %}
+            <span class="badge bg-danger">High</span>
+          {% elif notice.priority == 'medium' %}
+            <span class="badge bg-warning text-dark">Medium</span>
+          {% else %}
+            <span class="badge bg-secondary">Low</span>
+          {% endif %}
 
-      <div class="card-body">
+          {% if notice.is_pinned %}
+            <span class="badge bg-primary">Pinned</span>
+          {% endif %}
 
-        <!--Priority-->
-        {% if notice.priority == 'high' %}
-          <span class="badge bg-danger">High</span>
-        {% elif notice.priority == 'medium' %}
-          <span class="badge bg-warning text-dark">Medium</span>
-        {% else %}
-          <span class="badge bg-secondary">Low</span>
-        {% endif %}
-
-        {% if notice.is_pinned %}
-          <span class="badge bg-primary">Pinned</span>
-        {% endif %}
-
-     <!-- CATEGORY-->
+          <span class="badge bg-info text-dark ms-1">
+            {{ notice.category.name }}
+          </span>
+        </div>
 
         <span class="deptt text-dark">
-          {{ notice.department }}
-        </span>
-
-        <span class="badge bg-info text-dark">
-          {{ notice.category.name }}
+           {{ notice.department|default:"General" }}
         </span>
 
         <h5 class="mt-2">
-          <a href="{% url 'notice_detail' notice.id %}"
-             class="text-decoration-none text-dark">
+          <a href="{% url 'notice_detail' notice.id %}" class="card-title-link text-decoration-none text-info fw-bold">
             {{ notice.title }}
           </a>
         </h5>
 
-        <small class="text-muted">
-          {{ notice.created_at|date:"F d, Y" }}
-        </small>
-
-        <p class="card-text mt-2">
+        <p class="card-text text-secondary small mb-3">
           {{ notice.content|truncatewords:20 }}
         </p>
 
-        <!-- LIKE BUTTON (AJAX)-->
-        <button class="btn btn-sm btn-outline-danger like-btn mt-2"
-                data-id="{{ notice.id }}">
-          ❤️ <span id="like-count-{{ notice.id }}">
-            {{ notice.likes.count }}
-          </span>
-        </button>
+        <div class="mt-auto d-flex justify-content-between align-items-center z-top">
+            <small class="text-muted">
+                <i class="fa-regular fa-calendar-days"></i> {{ notice.created_at|date:"M d, Y" }}
+            </small>
 
+            <button class="btn btn-sm btn-outline-danger like-btn" data-id="{{ notice.id }}">
+              ❤️ <span id="like-count-{{ notice.id }}">{{ notice.likes.count }}</span>
+            </button>
+        </div>
       </div>
 
-      <!-- STAFF CONT-->
       {% if user.is_staff %}
-      <div class="card-footer bg-white border-0 text-end">
-        <a href="{% url 'edit_notice' notice.id %}"
-           class="btn btn-sm btn-outline-primary">
-          Edit
+      <div class="card-footer text-end z-top">
+        <a href="{% url 'edit_notice' notice.id %}" class="btn btn-sm btn-outline-primary me-1">
+          <i class="fa-solid fa-pen"></i> Edit
         </a>
-        <a href="{% url 'delete_notice' notice.id %}"
-           class="btn btn-sm btn-outline-danger">
-          Delete
+        <a href="{% url 'delete_notice' notice.id %}" class="btn btn-sm btn-outline-danger">
+          <i class="fa-solid fa-trash"></i> Delete
         </a>
       </div>
       {% endif %}
-
     </div>
   </div>
   {% empty %}
-    <p>No notices available.</p>
+    <div class="col-12 text-center py-5">
+        <p class="text-muted fs-4">No notices available in this category.</p>
+    </div>
   {% endfor %}
-
 </div>
 
-<!-- AJAX LIKE SCRIPT-->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.like-btn').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevents the card-click from firing if title is hit
 
             const noticeId = this.dataset.id;
-
             fetch(`/like/${noticeId}/`, {
                 method: 'POST',
                 headers: {
@@ -144,11 +173,8 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById(
-                    `like-count-${noticeId}`
-                ).innerText = data.total_likes;
+                document.getElementById(`like-count-${noticeId}`).innerText = data.total_likes;
             });
-
         });
     });
 });

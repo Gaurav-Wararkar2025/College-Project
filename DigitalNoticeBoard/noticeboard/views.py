@@ -9,15 +9,18 @@ from .models import Notice, Category
 from .forms import NoticeForm
 from django.utils import timezone
 
+from django.db.models import Sum, Count, Q
+from django.db.models.functions import TruncMonth
 
-# ======================================================
-# HOME VIEW (Dashboard + Filters + Pagination + Search)
-# ======================================================
+
 from django.db.models import Q
 from .models import Notice, Category
 
-
 from django.contrib.auth.decorators import user_passes_test
+# ======================================================
+# HOME VIEW (Dashboard + Filters + Pagination + Search)
+# ======================================================
+
 
 def staff_check(user):
     return user.is_staff
@@ -76,28 +79,29 @@ def home(request):
 # ===============================
 # ADMIN DASHBOARD (Advanced View)
 # ===============================
-from django.db.models.functions import TruncMonth
-from django.db.models import Count
-from datetime import datetime
+from django.db.models import Sum, Count
+
 
 @login_required(login_url='login')
 @user_passes_test(staff_check)
 def dashboard(request):
-    """
-    Advanced Admin dashboard with:
-    - Total analytics
-    - Category distribution
-    - Monthly growth trend
-    """
-
-    notices = Notice.objects.all().order_by('-created_at')
+    # 1. Base Data Fetching
+    # We use select_related('category') to ensure category names show up in the table
+    notices = Notice.objects.all().select_related('category').order_by('-created_at')
+    
     total_notices = notices.count()
     total_categories = Category.objects.count()
-    latest_notices = notices[:5]
+    
+    # Show top 10 instead of 5 to fill your UI better
+    latest_notices = notices[:10] 
 
-    # -------------------------
-    # Category Pie Chart Data
-    # -------------------------
+    # 2. CALCULATION: Total Engagement (Likes + Views)
+    # This aggregates every single 'like' relationship and 'views_count' integer
+    t_likes = Notice.objects.aggregate(total=Count('likes'))['total'] or 0
+    t_views = Notice.objects.aggregate(total=Sum('views_count'))['total'] or 0
+    total_engagement = t_likes + t_views
+
+    # 3. Category Pie Chart Data
     categories = Category.objects.all()
     category_labels = []
     category_counts = []
@@ -105,14 +109,12 @@ def dashboard(request):
     for category in categories:
         category_labels.append(category.name)
         category_counts.append(
-            Notice.objects.filter(category=category).count()
+            notices.filter(category=category).count()
         )
 
-    # -------------------------
-    # Monthly Trend Graph Data
-    # -------------------------
+    # 4. Monthly Trend Graph Data
     monthly_data = (
-        Notice.objects
+        notices
         .annotate(month=TruncMonth('created_at'))
         .values('month')
         .annotate(count=Count('id'))
@@ -123,12 +125,14 @@ def dashboard(request):
     trend_counts = []
 
     for entry in monthly_data:
-        trend_labels.append(entry['month'].strftime("%b %Y"))
-        trend_counts.append(entry['count'])
+        if entry['month']: 
+            trend_labels.append(entry['month'].strftime("%b %Y"))
+            trend_counts.append(entry['count'])
 
     context = {
         'total_notices': total_notices,
         'total_categories': total_categories,
+        'total_engagement': total_engagement,
         'latest_notices': latest_notices,
         'category_labels': category_labels,
         'category_counts': category_counts,
@@ -137,7 +141,6 @@ def dashboard(request):
     }
 
     return render(request, 'noticeboard/dashboard.html', context)
-
 
 # ===============================
 # ADD NOTICE (Staff Only)
@@ -254,29 +257,24 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 
 def login_view(request):
-
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')
+        # Capture the 'next' destination from the URL (defaults to 'home')
+        next_url = request.GET.get('next', 'home')
 
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-
-            # ROLE BASED REDIRECT
-            if user.is_staff:
-                return redirect('dashboard')
-            else:
-                return redirect('home')
-
+            # Redirect to the 'next' page if it exists, otherwise go home
+            return redirect(next_url)
         else:
             return render(request, 'noticeboard/login.html', {
                 'error': 'Invalid credentials'
             })
 
     return render(request, 'noticeboard/login.html')
-
 
 
 from django.contrib.auth import logout
@@ -307,8 +305,78 @@ def like_notice(request, pk):
     })
 
 
+
+from django.db.models import Sum, Count
+from .models import Notice, Category
+
 @login_required(login_url='login')
 @user_passes_test(staff_check)
 def analytics_dashboard(request):
-    notices = Notice.objects.all()
-    return render(request, 'noticeboard/analytics.html', {'notices': notices})
+    """
+    CLEANED MASTER DASHBOARD:
+    Calculates engagement, chart data, and fetches the activity log.
+    """
+    # 1. Fetch all notices with their categories (prevents database lag)
+    notices_queryset = Notice.objects.select_related('category').all().order_by('-created_at')
+    
+    # 2. Key Stats
+    total_notices = notices_queryset.count()
+    total_categories = Category.objects.count()
+    latest_notices = notices_queryset[:10]  # This supplies the 'Activity Log' table
+
+    # 3. ENGAGEMENT CALCULATION (Fixes the "0" issue)
+    # Counts every record in the 'likes' many-to-many table
+    t_likes = Notice.objects.aggregate(total=Count('likes'))['total'] or 0
+    # Adds up the 'views_count' column from every notice
+    t_views = Notice.objects.aggregate(total=Sum('views_count'))['total'] or 0
+    total_engagement = t_likes + t_views
+
+    # 4. CHART DATA: Categories
+    categories = Category.objects.all()
+    category_labels = [cat.name for cat in categories]
+    category_counts = [notices_queryset.filter(category=cat).count() for cat in categories]
+
+    # 5. CHART DATA: Monthly Trend
+    monthly_data = (
+        notices_queryset
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    trend_labels = [entry['month'].strftime("%b %Y") for entry in monthly_data if entry['month']]
+    trend_counts = [entry['count'] for entry in monthly_data if entry['month']]
+
+    context = {
+        'total_notices': total_notices,
+        'total_categories': total_categories,
+        'total_engagement': total_engagement,
+        'latest_notices': latest_notices,
+        'category_labels': category_labels,
+        'category_counts': category_counts,
+        'trend_labels': trend_labels,
+        'trend_counts': trend_counts,
+    }
+    return render(request, 'noticeboard/dashboard.html', context)
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.models import User
+from django.contrib.admin.views.decorators import staff_member_required
+
+
+@login_required(login_url='login')
+@user_passes_test(staff_check)
+def user_list(request):
+    users = User.objects.all().exclude(is_superuser=True) # Don't block yourself!
+    return render(request, 'noticeboard/user_list.html', {'users': users})
+
+@login_required(login_url='login')
+@user_passes_test(staff_check)
+def toggle_user_status(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    # is_active controls if they can log in
+    target_user.is_active = not target_user.is_active
+    target_user.save()
+    return redirect('user_list')

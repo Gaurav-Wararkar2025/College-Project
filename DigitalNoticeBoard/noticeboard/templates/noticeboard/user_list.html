@@ -1,0 +1,106 @@
+{% extends 'noticeboard/base.html' %}
+
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<style>
+    .user-card {
+        background: rgba(22, 27, 34, 0.8) !important;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 25px;
+    }
+    .user-table {
+        color: #c9d1d9 !important;
+    }
+    .user-table thead th {
+        color: #00a2ff;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+    .avatar-sm {
+        width: 35px;
+        height: 35px;
+        background: #30363d;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #00ff88;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+    .btn-action {
+        border-radius: 10px;
+        font-size: 0.85rem;
+        transition: 0.3s;
+    }
+</style>
+
+<div class="user-card shadow-lg">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">Registered Users</h4>
+        <span class="text-muted small">Total: {{ users.count }}</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table user-table align-middle">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Date Joined</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar-sm">{{ u.username|first|upper }}</div>
+                            <span class="fw-bold">{{ u.username }}</span>
+                        </div>
+                    </td>
+                    <td>{{ u.email|default:"No Email" }}</td>
+                    <td class="text-muted">{{ u.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        {% if u.is_active %}
+                            <span class="status-badge bg-success-subtle text-success border border-success">Active</span>
+                        {% else %}
+                            <span class="status-badge bg-danger-subtle text-danger border border-danger">Blocked</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <form action="{% url 'toggle_user_status' u.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            {% if u.is_active %}
+                                <button type="submit" class="btn btn-outline-danger btn-action">
+                                    <i class="fa-solid fa-ban me-1"></i> Block
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-outline-success btn-action">
+                                    <i class="fa-solid fa-check me-1"></i> Approve
+                                </button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">No users found in the system.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

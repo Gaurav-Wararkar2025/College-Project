@@ -1,6 +1,7 @@
 {% extends 'noticeboard/base.html' %}
 {% block content %}
 
+
 <!-- HERO SECTION -->
 <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
   <div class="container-fluid py-4">
@@ -12,7 +13,7 @@
 
     <div class="d-flex gap-3">
 
-      <!-- Category Dropdown -->
+     <!-- Category Dropdown -->
       <form method="GET">
         <select name="category"
                 class="form-select"
@@ -40,8 +41,14 @@
   </div>
 </div>
 
-<!-- LATEST NOTICES -->
-<h3 class="mb-4">Latest Notices</h3>
+<!-- LATEST NOTICES-->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">Latest Notices</h3>
+    <a href="{% url 'add_notice' %}" class="btn btn-success fw-bold rounded-pill px-4" 
+       style="background: #00ff88; color: black; border: none; box-shadow: 0 0 15px rgba(0,255,136,0.4);">
+       + Create Notice
+    </a>
+</div>
 
 <div class="row">
 
@@ -51,7 +58,7 @@
 
       <div class="card-body">
 
-        <!-- PRIORITY BADGE -->
+        # PRIORITY BADGE 
         {% if notice.priority == 'high' %}
           <span class="badge bg-danger">High</span>
         {% elif notice.priority == 'medium' %}
@@ -60,12 +67,12 @@
           <span class="badge bg-secondary">Low</span>
         {% endif %}
 
-        <!-- PIN BADGE -->
+        #PIN BADGE
         {% if notice.is_pinned %}
           <span class="badge bg-primary">Pinned</span>
         {% endif %}
 
-        <!-- CATEGORY -->
+     <!-- CATEGORY-->
         <span class="badge bg-info text-dark">
           {{ notice.category.name }}
         </span>
@@ -85,7 +92,7 @@
           {{ notice.content|truncatewords:20 }}
         </p>
 
-        <!-- LIKE BUTTON (AJAX) -->
+        <!-- LIKE BUTTON (AJAX)-->
         <button class="btn btn-sm btn-outline-danger like-btn mt-2"
                 data-id="{{ notice.id }}">
           ❤️ <span id="like-count-{{ notice.id }}">
@@ -95,7 +102,7 @@
 
       </div>
 
-      <!-- STAFF CONTROLS -->
+      <!-- STAFF CONT-->
       {% if user.is_staff %}
       <div class="card-footer bg-white border-0 text-end">
         <a href="{% url 'edit_notice' notice.id %}"
@@ -117,7 +124,7 @@
 
 </div>
 
-<!-- AJAX LIKE SCRIPT -->
+<!-- AJAX LIKE SCRIPT-->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.like-btn').forEach(button => {

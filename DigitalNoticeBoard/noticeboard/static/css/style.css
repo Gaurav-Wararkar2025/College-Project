@@ -1,0 +1,145 @@
+/* style.css - Advanced Digital Notice Board Theme */
+:root {
+    --bg-deep: #2cf8ff;
+    --card-bg: #000000;
+    --sidebar-bg: #be6e95;
+    --neon-green: #70ff2e;
+    --neon-red: #ff4d4d;
+    --neon-blue: #00a2ff;
+    --neon-yellow: #ffcc00;
+    --text-main: #f0f6fc;
+    --text-dim: #ffffff;
+    --border-glow: #ffffff;
+}
+
+body {
+    background-image: url("/static/images/background.png");
+        background-size: cover;
+        /* Full screen */
+        background-position: center;
+        /* Centered */
+        background-repeat: no-repeat;
+        /* No repeat */
+        background-attachment: fixed;
+        /* Parallax effect */
+    background-color: var(--bg-deep) !important;
+    color: var(--text-main) !important;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Navbar Upgrade */
+.navbar {
+    background: rgba(1, 4, 9, 0.8) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-glow);
+    padding: 0.8rem 2rem !important;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* Hero Section Upgrade */
+.bg-light.rounded-3 {
+    background: linear-gradient(135deg, #1c2128 0%, #0d1117 100%) !important;
+    border: 1px solid var(--border-glow);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.display-5 {
+    color: var(--neon-blue);
+    text-shadow: 0 0 15px rgba(0, 162, 255, 0.3);
+}
+
+/* Notice Cards - Advanced Styling */
+.card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-glow) !important;
+    border-radius: 16px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    border-color: #58a6ff !important;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7);
+}
+
+/* Priority Glow logic */
+.card:has(.bg-danger) {
+    border-top: 5px solid var(--neon-red) !important;
+}
+
+.card:has(.bg-warning) {
+    border-top: 5px solid var(--neon-yellow) !important;
+}
+
+.card:has(.bg-info),
+.card:has(.bg-success) {
+    border-top: 5px solid var(--neon-green) !important;
+}
+
+.card:has(.bg-primary) {
+    border-top: 5px solid var(--neon-blue) !important;
+}
+
+/* Badge Styling */
+.badge {
+    padding: 6px 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    border-radius: 6px !important;
+    text-transform: uppercase;
+    font-size: 0.7rem !important;
+}
+
+/* Text Visibility Fixes */
+.card-body h5 a {
+    color: var(--text-main) !important;
+    text-decoration: none !important;
+}
+
+.card-body h5 a:hover {
+    color: var(--neon-blue) !important;
+}
+
+.card-text {
+    color: var(--text-dim) !important;
+    line-height: 1.6;
+}
+
+.text-muted {
+    color: var(--text-dim) !important;
+    font-weight: 500;
+}
+
+/* Interactive Elements */
+.like-btn {
+    border: 1px solid rgba(255, 77, 77, 0.3) !important;
+    color: var(--neon-red) !important;
+    background: rgba(255, 77, 77, 0.05) !important;
+    border-radius: 8px !important;
+    transition: 0.2s;
+}
+
+.like-btn:hover {
+    background: rgba(255, 77, 77, 0.2) !important;
+    transform: scale(1.05);
+}
+
+/* Form Visibility Fix (Add/Edit Page) */
+input,
+textarea,
+select {
+    background-color: #8492ff !important;
+    border: 1px solid var(--border-glow) !important;
+    color: white !important;
+}
+
+input:focus,
+textarea:focus {
+    border-color: var(--neon-blue) !important;
+    box-shadow: 0 0 0 3px rgba(0, 162, 255, 0.2) !important;
+}

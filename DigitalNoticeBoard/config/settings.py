@@ -154,3 +154,23 @@ DATETIME_INPUT_FORMATS = [
     '%d/%m/%Y',        # 20/03/2026
     '%Y-%m-%dT%H:%M',  # Required for HTML5 datetime-local input
 ]
+
+
+import os
+
+DEBUG = False
+
+ALLOWED_HOSTS = ['your-app-name.onrender.com']
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': '5432',
+    }
+}

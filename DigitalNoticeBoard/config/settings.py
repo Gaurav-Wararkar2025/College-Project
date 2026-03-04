@@ -158,7 +158,7 @@ import os
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['your-app-name.onrender.com']
+ALLOWED_HOSTS = ['*']
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 

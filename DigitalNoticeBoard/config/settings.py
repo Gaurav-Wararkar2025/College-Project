@@ -172,3 +172,8 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+
+import os
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

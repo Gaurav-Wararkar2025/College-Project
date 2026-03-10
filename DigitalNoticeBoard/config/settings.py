@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -156,9 +157,17 @@ DATETIME_INPUT_FORMATS = [
 
 import os
 
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+import os
+
+# Add your Render URL and localhost
+ALLOWED_HOSTS = [
+    'digital-notice-board-9fta.onrender.com', 
+    '127.0.0.1', 
+    'localhost',
+    os.environ.get('RENDER_EXTERNAL_HOSTNAME') # This automatically gets your Render URL
+]
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
